@@ -22,6 +22,20 @@ def print_equations(matrix, solutions_order=None):
         print("=", matrix[row][size])
 
 
+def get_validated_input(message, min_threshold, max_threshold):
+    while True:
+        try:
+            unvalidated_input = int(input(message))
+            assert min_threshold <= unvalidated_input <= max_threshold
+        except ValueError:
+            print("Not an integer! Please enter an integer.")
+        except AssertionError:
+            print("Please enter an integer between {} and {}".format(min_threshold, max_threshold))
+        else:
+            break
+    return unvalidated_input
+
+
 def load_preset_data():
     matrix = [[[1, 2, -1, 2, 0],
                [1, -2, 4, 4, 4],
@@ -38,7 +52,7 @@ def load_preset_data():
     print("\n[2]")
     print_equations(matrix[1])
 
-    selected_matrix = int(input("Option: "))
+    selected_matrix = get_validated_input("Option: ", 1, 2)
 
     if selected_matrix == 1:
         return matrix[0]
@@ -55,7 +69,7 @@ def load_data():
     print("[1] Preset data")
     print("[2] Own data")
 
-    selected_input_method = int(input("Option: "))
+    selected_input_method = get_validated_input("Option: ", 1, 2)
 
     if selected_input_method == 1:
         return load_preset_data()
@@ -63,8 +77,24 @@ def load_data():
         return load_own_data()
 
 
+def to_stop():
+    print("Do u want to calculate other equations:")
+    print("[1] Yes")
+    print("[2] No")
+
+    to_stop_decision = get_validated_input("Option: ", 1, 2)
+
+    if to_stop_decision == 1:
+        return False
+    elif to_stop_decision == 2:
+        return True
+
+
 def main():
-    matrix = load_data()
+    while True:
+        matrix = load_data()
+        if to_stop():
+            break
 
 
 if __name__ == "__main__":
