@@ -22,18 +22,29 @@ def print_equations(matrix, solutions_order=None):
         print("=", matrix[row][size])
 
 
-def get_validated_input(message, min_threshold, max_threshold):
+def get_validated_input_int(min_threshold, max_threshold, message=None) -> int:
     while True:
         try:
-            unvalidated_input = int(input(message))
-            assert min_threshold <= unvalidated_input <= max_threshold
+            unvalidated_int_input = int(input(message))
+            assert min_threshold <= unvalidated_int_input <= max_threshold
         except ValueError:
             print("Not an integer! Please enter an integer.")
         except AssertionError:
             print("Please enter an integer between {} and {}".format(min_threshold, max_threshold))
         else:
             break
-    return unvalidated_input
+    return unvalidated_int_input
+
+
+def get_validated_input_float(message=None) -> float:
+    while True:
+        try:
+            unvalidated_float_input = float(input(message))
+        except ValueError:
+            print("Not a float! Please enter a float.")
+        else:
+            break
+    return unvalidated_float_input
 
 
 def load_preset_data():
@@ -52,7 +63,7 @@ def load_preset_data():
     print("\n[2]")
     print_equations(matrix[1])
 
-    selected_matrix = get_validated_input("Option: ", 1, 2)
+    selected_matrix = get_validated_input_int(1, 2, "Option: ")
 
     if selected_matrix == 1:
         return matrix[0]
@@ -61,7 +72,16 @@ def load_preset_data():
 
 
 def load_own_data():
-    pass
+    size = get_validated_input_int(1, 6, "Enter number of equations (max 6): ")
+    matrix = [[0 for col in range(size + 1)] for row in range(size)]
+
+    for row in range(size):
+        print("Equation " + str(row + 1) + "\n ", end="")
+        for col in range(size):
+            matrix[row][col] = get_validated_input_float("x{} * ".format(col + 1))
+            print("+", end="") if col < size - 1 else print("    = ", end="")
+        matrix[row][size] = float(input())
+    return matrix
 
 
 def load_data():
@@ -69,7 +89,7 @@ def load_data():
     print("[1] Preset data")
     print("[2] Own data")
 
-    selected_input_method = get_validated_input("Option: ", 1, 2)
+    selected_input_method = get_validated_input_int(1, 2, "Option: ")
 
     if selected_input_method == 1:
         return load_preset_data()
@@ -82,7 +102,7 @@ def to_stop():
     print("[1] Yes")
     print("[2] No")
 
-    to_stop_decision = get_validated_input("Option: ", 1, 2)
+    to_stop_decision = get_validated_input_int(1, 2, "Option: ")
 
     if to_stop_decision == 1:
         return False
