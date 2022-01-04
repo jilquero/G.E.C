@@ -1,3 +1,27 @@
+from os import system, name
+
+epsilon = 1e-7
+
+
+def clear():
+    if name == 'nt':
+        _ = system('cls')
+    else:
+        _ = system('clear')
+
+
+def basic_gauss(matrix):
+    pass
+
+
+def advanced_gauss(matrix):
+    pass
+
+
+def super_advanced_gauss(matrix):
+    pass
+
+
 def print_matrix(matrix, solutions_order=None):
     size = len(matrix)
     if solutions_order is None:
@@ -48,6 +72,7 @@ def get_validated_input_float(message=None) -> float:
 
 
 def load_preset_data():
+    clear()
     matrix = [[[1, 2, -1, 2, 0],
                [1, -2, 4, 4, 4],
                [0, -3, 1.5, 7, 0],
@@ -72,6 +97,7 @@ def load_preset_data():
 
 
 def load_own_data():
+    clear()
     size = get_validated_input_int(1, 6, "Enter number of equations (max 6): ")
     matrix = [[0 for col in range(size + 1)] for row in range(size)]
 
@@ -85,6 +111,7 @@ def load_own_data():
 
 
 def load_data():
+    clear()
     print("Select data source")
     print("[1] Preset data")
     print("[2] Own data")
@@ -97,7 +124,25 @@ def load_data():
         return load_own_data()
 
 
+def select_method(matrix):
+    clear()
+    print("Select a method:")
+    print("[1] Basic gauss")
+    print("[2] Advanced gauss")
+    print("[3] Super advanced gauss")
+
+    selected_method = get_validated_input_int(1, 3, "Option: ")
+
+    if selected_method == 1:
+        basic_gauss(matrix)
+    elif selected_method == 2:
+        advanced_gauss(matrix)
+    elif selected_method == 3:
+        super_advanced_gauss(matrix)
+
+
 def to_stop():
+    clear()
     print("Do u want to calculate other equations:")
     print("[1] Yes")
     print("[2] No")
@@ -113,6 +158,7 @@ def to_stop():
 def main():
     while True:
         matrix = load_data()
+        select_method(matrix)
         if to_stop():
             break
 
