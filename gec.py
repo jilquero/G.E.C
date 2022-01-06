@@ -43,10 +43,10 @@ def reverse_procedure(matrix, size):
     solutions[size - 1] = matrix[size - 1][size] / matrix[size - 1][size - 1]
 
     for i in range(size - 2, -1, -1):
-        sum_of_previous = 0
+        solutions[i] = matrix[i][size]
         for j in range(i + 1, size):
-            sum_of_previous += solutions[j] * matrix[i][j]
-        solutions[i] = (matrix[i][size] - sum_of_previous) / matrix[i][i]
+            solutions[i] -= matrix[i][j] * solutions[j]
+        solutions[i] /= matrix[i][i]
     return solutions
 
 
@@ -61,7 +61,6 @@ def swap_row(matrix, x, y):
 
 
 def step(matrix, size, row_col):
-    p = 1
     for i in range(row_col+1, size):
         p = matrix[i][row_col] / matrix[row_col][row_col]
         for j in range(row_col, size + 1):
@@ -71,7 +70,7 @@ def step(matrix, size, row_col):
 def basic_gauss(matrix, size):
     for i in range(size - 1):
         if is_zero(matrix[i][i]):
-            return "\nA zero appeared in the matrix in the same row and column number, cant continue with basic gauss"
+            return print_message()
         step(matrix, len(matrix), i)
     return get_solutions(matrix, size)
 
@@ -80,21 +79,38 @@ def advanced_gauss(matrix, size):
     order = [i for i in range(size)]
     for i in range(size - 1):
         col = i
-        maximum = matrix[i][i]
+        maximum = abs(matrix[i][i])
         for j in range(i, size):
             if abs(matrix[i][j]) > maximum:
-                maximum = matrix[i][j]
+                maximum = abs(matrix[i][j])
                 col = j
         if col != i:
             swap_column(matrix, order, col, i)
         if is_zero(matrix[i][i]):
-            return "\nA zero appeared in the matrix in the same row and column number, cant continue with basic gauss"
+            return print_message()
         step(matrix, len(matrix), i)
     return get_solutions(matrix, size, order)
 
 
 def super_advanced_gauss(matrix, size):
-    pass
+    order = [i for i in range(size)]
+    for i in range(size - 1):
+        col = row = i
+        maximum = abs(matrix[i][i])
+        for j in range(i, size):
+            for k in range(i, size):
+                if abs(matrix[j][k]) > maximum:
+                    maximum = abs(matrix[j][k])
+                    row = j
+                    col = k
+        if col != i:
+            swap_column(matrix, order, col, i)
+        if row != i:
+            swap_row(matrix, row, i)
+        if is_zero(matrix[i][i]):
+            return print_message()
+        step(matrix, len(matrix), i)
+    return get_solutions(matrix, size, order)
 
 
 def print_matrix(matrix, size):
@@ -117,12 +133,16 @@ def print_equations(matrix, size):
         print("= {:g}".format(matrix[row][size]))
 
 
-def print_solutions(solutions):
+def print_solutions(solutions) -> str:
     solutions = to_zero_solutions(solutions)
     result = "\nSolutions:"
     for i in range(len(solutions)):
         result += "\nx{} = {:g}".format(i + 1, solutions[i])
     return result
+
+
+def print_message() -> str:
+    return "\nA zero appeared as a(kk), precisely one solution of system doesnt exist"
 
 
 def get_validated_input_int(min_threshold, max_threshold, message=None) -> int:
@@ -159,20 +179,27 @@ def load_preset_data():
                                     [3.5, -18, 13, -23.75, -21, -5.5],
                                     [3.5, 3, -5.25, 9.25, 10.5, 12.5],
                                     [2, 14.5, -10.5, 18.5, 21, 23.5],
-                                    [1.5, 6.75, -9.25, 17, -10.5, -45.25]]]
+                                    [1.5, 6.75, -9.25, 17, -10.5, -45.25]], [[2.25, -2.5, 4, -5.25, -1],
+                                                                             [-3, -7.5, 6.5, 0, 17],
+                                                                             [-6.25, -12.5, 0.25, 5.25, 24.25],
+                                                                             [9, 10, 7, -21, -33]]]
 
     print("Select equations to solve: ")
     print("\n[1]")
     print_equations(matrix[0], len(matrix[0]))
     print("\n[2]")
     print_equations(matrix[1], len(matrix[1]))
+    print("\n[3]")
+    print_equations(matrix[2], len(matrix[2]))
 
-    selected_matrix = get_validated_input_int(1, 2, "Option: ")
+    selected_matrix = get_validated_input_int(1, 3, "Option: ")
 
     if selected_matrix == 1:
         return matrix[0]
     elif selected_matrix == 2:
         return matrix[1]
+    elif selected_matrix == 3:
+        return matrix[2]
 
 
 def load_own_data():
