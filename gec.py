@@ -10,21 +10,32 @@ def clear():
         _ = system('clear')
 
 
-def sort_solutions(solutions, solutions_order):
-    pass
+def sort_solutions(solutions, order):
+    return [x for _, x in sorted(zip(order, solutions))]
 
 
-def to_zero(matrix, size_row, size_col):
-    for i in range(size_row):
-        for j in range(size_col):
-            if size_col == 1 and is_zero(matrix[i]):
-                matrix[i] = 0
-            elif size_col != 1 and is_zero(matrix[i][j]):
-                matrix[i][j] = 0
+def to_zero_solutions(solutions):
+    return [0 if is_zero(num) else num for num in solutions]
+
+
+def to_zero_matrix(matrix):
+    return [[0 if is_zero(num) else num for num in row] for row in matrix]
 
 
 def is_zero(number) -> bool:
     return True if abs(number) < epsilon else False
+
+
+def get_solutions(matrix, size, order=None):
+    if matrix[size - 1][size - 1] == 0:
+        if matrix[size - 1][size] != 0:
+            return "\nThe system has no solutions"
+        else:
+            return "\nThe system has an infinite number of solutions"
+    solutions = reverse_procedure(matrix, size)
+    if order is not None:
+        solutions = sort_solutions(solutions, order)
+    return print_solutions(solutions)
 
 
 def reverse_procedure(matrix, size):
@@ -39,6 +50,16 @@ def reverse_procedure(matrix, size):
     return solutions
 
 
+def swap_column(matrix, order, x, y):
+    order[x], order[y] = order[y], order[x]
+    for row in matrix:
+        row[x], row[y] = row[y], row[x]
+
+
+def swap_row(matrix, x, y):
+    matrix[x][:], matrix[y][:] = matrix[y][:], matrix[x][:]
+
+
 def step(matrix, size, row_col):
     p = 1
     for i in range(row_col+1, size):
@@ -50,55 +71,58 @@ def step(matrix, size, row_col):
 def basic_gauss(matrix, size):
     for i in range(size - 1):
         if is_zero(matrix[i][i]):
-            return "A zero appeared in the matrix in the same row and column number, cant continue with basic gauss"
+            return "\nA zero appeared in the matrix in the same row and column number, cant continue with basic gauss"
         step(matrix, len(matrix), i)
-
-    if matrix[size - 1][size - 1] == 0:
-        if matrix[size - 1][size] != 0:
-            return "The system has no solutions"
-        else:
-            return "The system has an infinite number of solutions"
-
-    return reverse_procedure(matrix, size)
+    return get_solutions(matrix, size)
 
 
 def advanced_gauss(matrix, size):
-    pass
+    order = [i for i in range(size)]
+    for i in range(size - 1):
+        col = i
+        maximum = matrix[i][i]
+        for j in range(i, size):
+            if abs(matrix[i][j]) > maximum:
+                maximum = matrix[i][j]
+                col = j
+        if col != i:
+            swap_column(matrix, order, col, i)
+        if is_zero(matrix[i][i]):
+            return "\nA zero appeared in the matrix in the same row and column number, cant continue with basic gauss"
+        step(matrix, len(matrix), i)
+    return get_solutions(matrix, size, order)
 
 
 def super_advanced_gauss(matrix, size):
     pass
 
 
-def print_matrix(matrix, size, solutions_order=None):
-    if solutions_order is None:
-        solutions_order = [i for i in range(size)]
-    to_zero(matrix, size, size + 1)
+def print_matrix(matrix, size):
+    matrix = to_zero_matrix(matrix)
     print("Matrix:")
     for row in range(size):
-        for col in solutions_order:
+        for col in range(size):
             print("{:g}".format(matrix[row][col]), end="\t")
         print("{:g}".format(matrix[row][size]))
 
 
-def print_equations(matrix, size, solutions_order=None):
-    if solutions_order is None:
-        solutions_order = [i for i in range(size)]
-    to_zero(matrix, size, size + 1)
+def print_equations(matrix, size):
+    matrix = to_zero_matrix(matrix)
     print("Equations:")
     for row in range(size):
         for col in range(size):
-            print("{:g}".format(matrix[row][col]) + "x" + str(solutions_order[col] + 1) + " ", end="")
+            print("{:g}".format(matrix[row][col]) + "x" + str(col + 1) + " ", end="")
             if matrix[row][col + 1] >= 0 and col < size - 1:
                 print("+", end="")
         print("= {:g}".format(matrix[row][size]))
 
 
-def print_solutions(solutions, size):
-    to_zero(solutions, size, 1)
-    print("Solutions:")
+def print_solutions(solutions):
+    solutions = to_zero_solutions(solutions)
+    result = "\nSolutions:"
     for i in range(len(solutions)):
-        print("x{} = {:g}".format(i + 1, solutions[i]))
+        result += "\nx{} = {:g}".format(i + 1, solutions[i])
+    return result
 
 
 def get_validated_input_int(min_threshold, max_threshold, message=None) -> int:
@@ -217,8 +241,7 @@ def calculate(matrix, gauss, message):
     solutions = gauss(matrix, size)
     print("\nAfter {} elimination:".format(message))
     print_matrix(matrix, size)
-    print()
-    print(solutions) if type(solutions) == str else print_solutions(solutions, size)
+    print(solutions)
 
 
 def main():
