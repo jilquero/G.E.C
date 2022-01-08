@@ -50,6 +50,15 @@ def reverse_procedure(matrix, size):
     return solutions
 
 
+def max_element_index(matrix, size, i):
+    row, col = i, i
+    for j in range(i, size):
+        for k in range(i, size):
+            if abs(matrix[j][k]) > abs(matrix[row][col]):
+                row, col = j, k
+    return row, col
+
+
 def swap_column(matrix, order, x, y):
     order[x], order[y] = order[y], order[x]
     for row in matrix:
@@ -71,45 +80,33 @@ def basic_gauss(matrix, size):
     for i in range(size - 1):
         if is_zero(matrix[i][i]):
             return print_message()
-        step(matrix, len(matrix), i)
+        step(matrix, size, i)
     return get_solutions(matrix, size)
 
 
 def advanced_gauss(matrix, size):
     order = [i for i in range(size)]
     for i in range(size - 1):
-        col = i
-        maximum = abs(matrix[i][i])
-        for j in range(i, size):
-            if abs(matrix[i][j]) > maximum:
-                maximum = abs(matrix[i][j])
-                col = j
+        _, col = max_element_index(matrix, size, i)
         if col != i:
             swap_column(matrix, order, col, i)
         if is_zero(matrix[i][i]):
             return print_message()
-        step(matrix, len(matrix), i)
+        step(matrix, size, i)
     return get_solutions(matrix, size, order)
 
 
 def super_advanced_gauss(matrix, size):
     order = [i for i in range(size)]
     for i in range(size - 1):
-        col = row = i
-        maximum = abs(matrix[i][i])
-        for j in range(i, size):
-            for k in range(i, size):
-                if abs(matrix[j][k]) > maximum:
-                    maximum = abs(matrix[j][k])
-                    row = j
-                    col = k
+        row, col = max_element_index(matrix, size, i)
         if col != i:
             swap_column(matrix, order, col, i)
         if row != i:
             swap_row(matrix, row, i)
         if is_zero(matrix[i][i]):
             return print_message()
-        step(matrix, len(matrix), i)
+        step(matrix, size, i)
     return get_solutions(matrix, size, order)
 
 
@@ -155,8 +152,7 @@ def get_validated_input_int(min_threshold, max_threshold, message=None) -> int:
         except AssertionError:
             print("Please enter an integer between {} and {}".format(min_threshold, max_threshold))
         else:
-            break
-    return unvalidated_int_input
+            return unvalidated_int_input
 
 
 def get_validated_input_float(message=None) -> float:
@@ -166,8 +162,7 @@ def get_validated_input_float(message=None) -> float:
         except ValueError:
             print("Not a float! Please enter a float.")
         else:
-            break
-    return unvalidated_float_input
+            return unvalidated_float_input
 
 
 def load_preset_data():
@@ -185,27 +180,18 @@ def load_preset_data():
                                                                              [9, 10, 7, -21, -33]]]
 
     print("Select equations to solve: ")
-    print("\n[1]")
-    print_equations(matrix[0], len(matrix[0]))
-    print("\n[2]")
-    print_equations(matrix[1], len(matrix[1]))
-    print("\n[3]")
-    print_equations(matrix[2], len(matrix[2]))
+    for i in range(len(matrix)):
+        print("\n[{}]".format(i + 1))
+        print_equations(matrix[i], len(matrix[i]))
 
     selected_matrix = get_validated_input_int(1, 3, "Option: ")
-
-    if selected_matrix == 1:
-        return matrix[0]
-    elif selected_matrix == 2:
-        return matrix[1]
-    elif selected_matrix == 3:
-        return matrix[2]
+    return matrix[selected_matrix - 1]
 
 
 def load_own_data():
     clear()
     size = get_validated_input_int(2, 6, "Enter number of equations (max 6): ")
-    matrix = [[0 for col in range(size + 1)] for row in range(size)]
+    matrix = [[0 for _ in range(size + 1)] for _ in range(size)]
     print()
     for row in range(size):
         print("Equation " + str(row + 1) + "\n ", end="")
@@ -223,27 +209,20 @@ def load_data():
     print("[2] Own data")
 
     selected_input_method = get_validated_input_int(1, 2, "Option: ")
-
-    if selected_input_method == 1:
-        return load_preset_data()
-    elif selected_input_method == 2:
-        return load_own_data()
+    return load_preset_data() if selected_input_method == 1 else load_own_data()
 
 
 def select_method(matrix):
     print("\nSelect a method:")
     print("[1] Basic gauss")
-    print("[2] Advanced gauss")
-    print("[3] Super advanced gauss")
+    print("[2] Gauss with max el in column")
+    print("[3] Gauss with max el in matrix")
 
     selected_method = get_validated_input_int(1, 3, "Option: ")
 
-    if selected_method == 1:
-        calculate(matrix, basic_gauss, "basic gauss")
-    elif selected_method == 2:
-        calculate(matrix, advanced_gauss, "gauss with rows")
-    elif selected_method == 3:
-        calculate(matrix, super_advanced_gauss, "full gauss")
+    gauss_options = (basic_gauss, advanced_gauss, super_advanced_gauss)
+    gauss_message = ("basic gauss", "gauss with max el in column", "gauss with max el in matrix")
+    calculate(matrix, gauss_options[selected_method - 1], gauss_message[selected_method - 1])
 
 
 def to_stop():
@@ -252,11 +231,7 @@ def to_stop():
     print("[2] No")
 
     to_stop_decision = get_validated_input_int(1, 2, "Option: ")
-
-    if to_stop_decision == 1:
-        return False
-    elif to_stop_decision == 2:
-        return True
+    return False if to_stop_decision == 1 else True
 
 
 def calculate(matrix, gauss, message):
